@@ -1,0 +1,1 @@
+﻿packages\NUnit.Console.3.0.1\tools\nunit3-console.exe Analyzers.Test\bin\Debug\Analyzers.Test.dll
