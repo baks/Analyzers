@@ -1,5 +1,7 @@
 ﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Formatting;
+using Microsoft.CodeAnalysis.Formatting;
 using NUnit.Framework;
 
 namespace Analyzers.Test
@@ -12,8 +14,16 @@ namespace Analyzers.Test
         [SetUp]
         public void SutSetup()
         {
+            var workspace = new AdhocWorkspace();
+            var options = workspace.Options;
+            options = options.WithChangedOption(CSharpFormattingOptions.IndentBraces, true);
+            options = options.WithChangedOption(CSharpFormattingOptions.NewLinesForBracesInMethods, true);
+            options = options.WithChangedOption(CSharpFormattingOptions.IndentBlock, true);
+            options = options.WithChangedOption(CSharpFormattingOptions.IndentBlock, true);
+            options = options.WithChangedOption(CSharpFormattingOptions.NewLinesForBracesInTypes, true);
+            workspace.Options = options;
             sut = new MethodAdder(SyntaxTokenList.Create(SyntaxFactory.Token(SyntaxKind.PublicKeyword)), "void",
-                "TestMethod");
+                "TestMethod", workspace);
         }
 
         [Test]

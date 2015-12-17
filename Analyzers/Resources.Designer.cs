@@ -71,7 +71,7 @@ namespace Analyzers {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Create SUT setup method.
+        ///   Looks up a localized string similar to Create SUT setup method for {0}.
         /// </summary>
         internal static string AnalyzerMessageFormat {
             get {

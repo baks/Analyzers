@@ -16,26 +16,29 @@ namespace Analyzers.Test
         }
 
         [Test]
-        public void RaisesInfoDiagnosticWhenClassWithTestFixtureAttribute()
+        public void RaisesInfoDiagnosticWhenClassWithTestFixtureAttributeAndSutField()
         {
             var sourceCode = @"
     using NUnit.Framework;
 
     namespace ConsoleApplication1
     {
+        class SutClass {}
+
         [TestFixture]
         class TypeName
-        {   
+        {
+            private SutClass sut; 
         }
     }";
             var expected = new DiagnosticResult
             {
                 Id = "CreateSutSetup",
-                Message = "Create SUT setup method",
+                Message = "Create SUT setup method for SutClass",
                 Severity = DiagnosticSeverity.Info,
                 Locations =
                     new[] {
-                            new DiagnosticResultLocation("Test0.cs", 7, 15)
+                            new DiagnosticResultLocation("Test0.cs", 9, 15)
                         }
             };
 

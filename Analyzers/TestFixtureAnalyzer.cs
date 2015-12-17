@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Immutable;
 using System.Linq;
 using Microsoft.CodeAnalysis;
@@ -41,23 +42,34 @@ namespace Analyzers
                 return;
             }
 
-            if (namedTypeSymbol.GetAttributes().Any(HasTestFixtureAttribute))
+            if (HasTestFixtureAttribute(namedTypeSymbol))
             {
-                if (!namedTypeSymbol.GetMembers().Any(HasPerTestSetUp))
+                var evaluator = new OrthogonalEvaluator(DoesNotHavePerTestSetUpAttribute, IsSutField);
+
+                if (namedTypeSymbol.GetMembers().Any(evaluator.Evaluate))
                 {
-                    var diagnostic = Diagnostic.Create(Rule, namedTypeSymbol.Locations[0], namedTypeSymbol.Name);
+                    var diagnostic = Diagnostic.Create(Rule, namedTypeSymbol.Locations[0],
+                        ((IFieldSymbol) evaluator.SecondConditionMatch).Type.Name);
 
                     context.ReportDiagnostic(diagnostic);
                 }
             }
         }
 
-        private static bool HasPerTestSetUp(ISymbol symbol) => symbol.GetAttributes().Any(HasSetUpAttribute);
+        private static bool IsSutField(ISymbol symbol)
+            => string.Equals("sut", symbol.Name, StringComparison.Ordinal) && FieldTypeIsClass((IFieldSymbol) symbol);
 
-        private static bool HasTestFixtureAttribute(AttributeData attrData)
-            => string.Equals(attrData.AttributeClass.Name, "TestFixtureAttribute");
+        private static bool FieldTypeIsClass(IFieldSymbol fieldSymbol) => fieldSymbol?.Type.TypeKind == TypeKind.Class;
 
-        private static bool HasSetUpAttribute(AttributeData attrData)
-            => string.Equals(attrData.AttributeClass.Name, "SetUpAttribute");
+        private static bool HasTestFixtureAttribute(INamedTypeSymbol symbol)
+            => symbol.GetAttributes().Any(IsAttributeTestFixtureAttribute);
+
+        private static bool DoesNotHavePerTestSetUpAttribute(ISymbol symbol) => !symbol.GetAttributes().Any(IsAttributeSetUpAttribute);
+
+        private static bool IsAttributeTestFixtureAttribute(AttributeData attrData)
+            => string.Equals(attrData.AttributeClass.Name, "TestFixtureAttribute", StringComparison.Ordinal);
+
+        private static bool IsAttributeSetUpAttribute(AttributeData attrData)
+            => string.Equals(attrData.AttributeClass.Name, "SetUpAttribute", StringComparison.Ordinal);
     }
 }
