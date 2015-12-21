@@ -1,4 +1,5 @@
-﻿using System.Collections.Immutable;
+﻿using System;
+using System.Collections.Immutable;
 using System.Composition;
 using System.Linq;
 using System.Threading;
@@ -6,9 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
-using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Microsoft.CodeAnalysis.Rename;
 
 namespace Analyzers
 {
@@ -27,22 +26,33 @@ namespace Analyzers
             var diagnostic = context.Diagnostics.First();
             var diagnosticSpan = diagnostic.Location.SourceSpan;
             var declaration = root.FindToken(diagnosticSpan.Start).Parent.AncestorsAndSelf().OfType<TypeDeclarationSyntax>().First();
-
-            context.RegisterCodeFix(
-                CodeAction.Create(
-                    title: ProviderTitle,
-                    createChangedDocument: c => CreateSutSetupMethodAsync(context.Document, declaration, c),
-                    equivalenceKey: ProviderTitle),
-                diagnostic);
+            var sutField = declaration.Ancestors().OfType<FieldDeclarationSyntax>().SingleOrDefault(FieldNamedSut);
+            if (sutField != null)
+            {
+                context.RegisterCodeFix(
+                    CodeAction.Create(
+                        title: ProviderTitle,
+                        createChangedDocument: c => CreateSutSetupMethodAsync(context.Document, declaration, sutField, c),
+                        equivalenceKey: ProviderTitle),
+                    diagnostic);
+            }
         }
 
-        private async Task<Document> CreateSutSetupMethodAsync(Document document, TypeDeclarationSyntax typeDecl, CancellationToken cancellationToken)
+        private async Task<Document> CreateSutSetupMethodAsync(Document document, TypeDeclarationSyntax typeDecl, FieldDeclarationSyntax sutField, CancellationToken cancellationToken)
         {
             //var newTypeDeclaration = typeDecl.Accept(new MethodRewriter());
+            //var semanticModel = await document.GetSemanticModelAsync(cancellationToken);
+            //var sutFieldSymbol = semanticModel.GetDeclaredSymbol(sutField, cancellationToken) as IFieldSymbol;
+            //sutFieldSymbol.Type.GetMembers().OfType<IMethodSymbol>().Any(m => m.)
             var syntaxRoot = await document.GetSyntaxRootAsync(cancellationToken);
             var newRoot = syntaxRoot.ReplaceNode(typeDecl, typeDecl);
 
             return document.WithSyntaxRoot(newRoot);
         }
+
+        private static bool FieldNamedSut(FieldDeclarationSyntax fieldDeclaration)
+            =>
+                fieldDeclaration.Declaration.Variables.Any(
+                    vd => string.Equals("sut", vd.Identifier.ValueText, StringComparison.OrdinalIgnoreCase));
     }
 }

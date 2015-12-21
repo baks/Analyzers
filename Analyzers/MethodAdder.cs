@@ -9,16 +9,15 @@ namespace Analyzers
 {
     public sealed class MethodAdder : CSharpSyntaxRewriter
     {
-        private readonly SyntaxTokenList modifiers;
+        private readonly SyntaxTokenList accessibilityModifiers;
         private readonly string returnType;
         private readonly string name;
-        private readonly Workspace workspace;
 
-        public MethodAdder(SyntaxTokenList modifiers, string returnType, string name, Workspace workspace)
+        public MethodAdder(SyntaxTokenList accessibilityModifiers, string returnType, string name)
         {
-            if (modifiers == null)
+            if (accessibilityModifiers == null)
             {
-                throw new ArgumentNullException(nameof(modifiers));
+                throw new ArgumentNullException(nameof(accessibilityModifiers));
             }
             if (returnType == null)
             {
@@ -28,41 +27,31 @@ namespace Analyzers
             {
                 throw new ArgumentNullException(nameof(name));
             }
-            if (workspace == null)
-            {
-                throw new ArgumentNullException(nameof(workspace));
-            }
-            this.modifiers = modifiers;
+            this.accessibilityModifiers = accessibilityModifiers;
             this.returnType = returnType;
             this.name = name;
-            this.workspace = workspace;
         }
 
         public override SyntaxNode VisitClassDeclaration(ClassDeclarationSyntax node)
         {
             var newMethod = SyntaxFactory.MethodDeclaration(
                 WithoutAttributes(),
-                modifiers,
+                accessibilityModifiers,
                 MethodReturnType(returnType),
                 WithoutExplicitInterface(),
                 MethodName(name),
                 WithoutGenericTypeParameters(),
                 WithoutParameters(),
                 WithoutTypeParametersConstraint(),
-                SyntaxFactory.Block(),
+                EmptyBlock(),
                 NoneToken());
 
-            return
-                base.VisitClassDeclaration(
-                    node.AddMembers(
-                        MethodWithLeadingAndTrailingTrivia(
-                            (MethodDeclarationSyntax) Formatter.Format(newMethod, workspace))));
+            return base.VisitClassDeclaration(node.AddMembers(newMethod));
         }
 
-        private static MethodDeclarationSyntax MethodWithLeadingAndTrailingTrivia(MethodDeclarationSyntax method)
+        private static BlockSyntax EmptyBlock()
         {
-            return method.WithLeadingTrivia(Enumerable.Repeat(SyntaxFactory.Space, 4))
-                .WithTrailingTrivia(SyntaxFactory.CarriageReturnLineFeed);
+            return SyntaxFactory.Block();
         }
 
         private static SyntaxToken NoneToken()

@@ -33,6 +33,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="MethodAdder.cs" />
+    <Compile Include="SutSetupBodyCreator.cs" />
     <Compile Include="OrthogonalEvaluator.cs" />
     <Compile Include="SutSetupCodeFixProvider.cs" />
     <Compile Include="TestFixtureAnalyzer.cs" />
