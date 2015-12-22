@@ -32,6 +32,8 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="FieldAdder.cs" />
+    <Compile Include="FieldInfo.cs" />
     <Compile Include="MethodAdder.cs" />
     <Compile Include="SutSetupBodyCreator.cs" />
     <Compile Include="OrthogonalEvaluator.cs" />
@@ -43,6 +45,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
+    <Compile Include="UsingsAdder.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resources.resx">

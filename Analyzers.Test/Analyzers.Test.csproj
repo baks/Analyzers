@@ -103,9 +103,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="FieldAdderTests.cs" />
     <Compile Include="MethodAdderTests.cs" />
     <Compile Include="SutSetupBodyCreatorTests.cs" />
     <Compile Include="SutSetupCodeFixProviderTests.cs" />
+    <Compile Include="UsingsAdderTests.cs" />
     <Compile Include="Verifiers\CodeFixVerifier.cs" />
     <Compile Include="Verifiers\DiagnosticVerifier.cs" />
     <Compile Include="Helpers\CodeFixVerifier.Helper.cs" />
